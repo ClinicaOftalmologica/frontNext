@@ -6,21 +6,24 @@ import { useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { graphQLClient, setGraphQLClientHeaders } from '@/services/graphql';
 import { gql } from "graphql-request"
+import ConfirmModal from '@/components/confirm-modal';
 
 export default function UsuariosIndex() {
   const router = useRouter();
   const [usuarios, setUsuarios] = useState([]);
   const { data, status } = useSession();
-  const modalRef = useRef();
+  const [modalVisibility, setModalVisibility] = useState(false);
+  const [userFix, setUserFix] = useState(-1);
+  const [refreshPage, setRefreshPage] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-        router.push("/auth/signin")
+      router.push("/auth/signin")
     }
     if (status === "authenticated") {
-        fetchUsuarios(data.accessToken);
+      fetchUsuarios(data.accessToken);
     }
-  }, [status]);
+  }, [status, refreshPage]);
 
   const fetchUsuarios = async (token) => {
     try {
@@ -53,14 +56,14 @@ export default function UsuariosIndex() {
       const response = data?.listarUsuario
       setUsuarios(response); // Establece los usuarios en el estado
     } catch (error) {
-        if (error.response) {
-            if (error.response.errors && error.response.errors[0] && error.response.errors[0].message) {
-                if (error.response.errors[0].message === "Unauthorized") {
-                    signOut();
-                    router.push('/auth/signin')
-                }
-            }
+      if (error.response) {
+        if (error.response.errors && error.response.errors[0] && error.response.errors[0].message) {
+          if (error.response.errors[0].message === "Unauthorized") {
+            signOut();
+            router.push('/auth/signin')
           }
+        }
+      }
     }
   };
 
@@ -74,45 +77,40 @@ export default function UsuariosIndex() {
   };
 
   const handleEliminarUsuario = (id) => {
-    // Lógica para eliminar usuario (aún no implementada)
-    console.log('Eliminar usuario con ID:', id);
+    setUserFix(id);
     showModal();
   };
 
-  const showModal = () => {
-    const modal = new bootstrap.Modal(modalRef.current);
-    modal.show();
+  const showModal = (newValue = true) => {
+    setModalVisibility(newValue)
   };
 
   const onCancel = () => {
-    console.log("Cancelado ...")
+    showModal(false);
   }
 
-  const onConfirm = () => {
-    console.log("Confirmado ...")
+  const onConfirm = async () => {
+    const queryDelete = gql`
+    mutation DeleteDoctor {
+      deleteDoctor(id: "${userFix}")
+    }`;
+    try {
+      console.log(userFix)
+      const data = await graphQLClient.request(queryDelete);
+      console.log(data)
+      showModal(false);
+      setRefreshPage(!refreshPage);
+    } catch(error) {
+      console.log(error)
+      showModal(false);
+    }
   }
 
   return (
     <div className="container">
       <h1>Lista de Usuarios</h1>
       <button className="btn btn-primary mb-3" onClick={handleCrearUsuario}>Crear Usuario</button>
-      <div className="modal fade" ref={modalRef} tabIndex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="confirmModalLabel">Confirm Action</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div className="modal-body">
-              Are you sure you want to proceed?
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={onCancel}>Cancel</button>
-              <button type="button" className="btn btn-primary" onClick={onConfirm}>Confirm</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {modalVisibility && <ConfirmModal onConfirm={onConfirm} onCancel={onCancel}></ConfirmModal>}
       <table className="table">
         <thead>
           <tr>
