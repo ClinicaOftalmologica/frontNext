@@ -29,6 +29,18 @@ const Navbar = () => {
             >
               Administrar doctores
             </Link>
+            <Link
+              href="/home/horario"
+              className="btn btn-primary btn-sm"
+            >
+              Mis Horarios
+            </Link>
+            <Link
+              href="/home/reserva"
+              className="btn btn-primary btn-sm"
+            >
+              Mis Reservas
+            </Link>
             <button
               onClick={() => signOut()}
               className="btn btn-danger btn-sm"
