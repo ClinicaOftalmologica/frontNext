@@ -48,7 +48,7 @@ export default function CrearUsuario() {
     mutation StoreDoctor {
       storeDoctor(
         request: {
-          email: "${formData.password}"
+          email: "${formData.email}"
           password: "${formData.password}"
           name: "${formData.name}"
           last_name: "${formData.lastName}"
