@@ -30,6 +30,12 @@ const Navbar = () => {
               Administrar doctores
             </Link>
             <Link
+              href="/home/bussines"
+              className="btn btn-primary btn-sm"
+            >
+              Ver Datos Bussines intelligence
+            </Link>
+            <Link
               href="/home/horario"
               className="btn btn-primary btn-sm"
             >
