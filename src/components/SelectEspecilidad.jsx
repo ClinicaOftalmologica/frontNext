@@ -18,9 +18,6 @@ export default function SelectEspecialidad() {
                         "ngrok-skip-browser-warning": "69420",
                     }
                   });
-                if (response.ok) {
-                    console.log("TODO SALIO BIEN" , await response.text())
-                }
                 const data_response = await response.json();
                 const formattedOptions = data_response.map(especialidad => ({
                     value: especialidad,
